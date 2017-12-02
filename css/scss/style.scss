@@ -5,6 +5,10 @@ body {
   font-weight: 300;
 }
 
+.container {
+  margin-top: 20px;
+}
+
 h2 {
   font-size: 14px;
   margin: 0;
@@ -31,6 +35,15 @@ h2 {
     color: #000;
     margin: 10px 0 0 10px;
     text-decoration: none;
+    line-height: 30px;
+    span {
+      display: inline-block;
+      float: left;
+      &.a-tooltip {
+        font-size: 12px;
+        margin-left: 5px;
+      }
+    }
   }
 }
 
@@ -90,7 +103,7 @@ h2 {
   }
 }
 
-@media only screen and (max-width : 1200px) {
+@media only screen and (max-width : 992px) {
   .tools {
     height: auto;
     margin-top: 20px;
