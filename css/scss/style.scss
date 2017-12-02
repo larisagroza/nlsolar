@@ -5,7 +5,7 @@ body {
   font-weight: 300;
 }
 
-.container {
+.container-fluid {
   margin-top: 20px;
 }
 
@@ -107,5 +107,11 @@ h2 {
   .tools {
     height: auto;
     margin-top: 20px;
+  }
+}
+
+@media only screen and (min-width : 1199px) {
+  .container-fluid {
+    max-width: 1175px;
   }
 }

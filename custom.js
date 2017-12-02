@@ -71,6 +71,7 @@ jQuery(function ($) {
     mainContainer.on('click', '.dropped', function () {
         $(this).toggleClass('ui-selected');
     }).selectable({
+        filter: '.draggable',
         stop: function () {
             recalculatePositions();
         }
@@ -170,7 +171,7 @@ jQuery(function ($) {
         maxLeft = 0;
         maxTop = 0;
 
-        $('.ui-selected').each(function () {
+        $('.ui-selected').each(function (e) {
             var c = $(this),
                 x1 = c.position().left,
                 x2 = x1 + c.width(),
