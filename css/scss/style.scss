@@ -2,51 +2,91 @@
 
 body {
   font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+
+h2 {
+  font-size: 14px;
+  margin: 0;
+  padding: 10px;
 }
 
 .sketch {
-  height: 400px;
+  height: 500px;
   position: relative;
   background-size: 50px 50px;
-  background-image: url('../img/grid.jpg');
-  max-width: round(100% / 50 * 50);
+  background-image: url($imgGrid);
 }
 
 .tools {
   background: #dedede;
-  height: 400px;
+  height: 500px;
   .solar-panel {
     float: left;
-    margin: 10px 0 0 10px;
+    margin: 0 0 0 10px;
   }
   a {
-    display: block;
+    display: inline-block;
+    font-size: 30px;
+    color: #000;
+    margin: 10px 0 0 10px;
+    text-decoration: none;
   }
 }
 
 .solar-panel {
   width: 50px;
   height: 82px;
+  &.obstacle {
+    width: 50px;
+    height: 50px;
+  }
+  p {
+    color: #fff;
+    font-size: 10px;
+    text-align: center;
+    line-height: 12px;
+    margin: 5px 0;
+    font-weight: normal;
+    &.option span {
+      border-radius: 3px;
+      background: #fff;
+      color: #000;
+      display: inline-block;
+      padding: 2px 4px;
+    }
+  }
 }
 
 .style-1 {
-  background: $colorPanel1;
+  background-image: url($imgPoly);
   &.ui-selected {
-    background: darken($colorPanel1, 10%);
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url($imgPoly)
   }
 }
 
 .style-2 {
-  background: $colorPanel2;
+  background-image: url($imgMono);
   &.ui-selected {
-    background: darken($colorPanel2, 10%);
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url($imgMono)
   }
 }
 
 .style-3 {
-  background: $colorPanel3;
+  background-image: url($imgMonoBlack);
   &.ui-selected {
-    background: darken($colorPanel3, 10%);
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url($imgMonoBlack)
+  }
+}
+
+.obstacle-1 {
+  background-image: url($imgObstacle);
+  &.ui-selected {
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url($imgObstacle)
   }
 }
 

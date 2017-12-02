@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Solar Panels</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -12,8 +12,9 @@
     <script src="lib/jquery-ui.touch-punch.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
-    <link href="css/style.css" rel="stylesheet"/>
     <script src="custom.js"></script>
+    <link href="css/icomoon/style.css" rel="stylesheet"/>
+    <link href="css/style.css" rel="stylesheet"/>
 </head>
 <body>
     <div class="container">
@@ -24,14 +25,49 @@
             <div class="cols-xs-12 col-lg-3">
                 <div class="tools">
                     <div class="options clearfix">
-                        <div id="panel1" class="draggable style-1 solar-panel"></div>
-                        <div id="panel2" class="draggable style-2 solar-panel"></div>
-                        <div id="panel3" class="draggable style-3 solar-panel"></div>
+                        <h2>Single Panel</h2>
+                        <div class="draggable style-1 solar-panel" data-qty="1">
+                            <p>Poly</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
+                        <div class="draggable style-2 solar-panel" data-qty="1">
+                            <p>Mono</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
+                        <div class="draggable style-3 solar-panel" data-qty="1">
+                            <p>Mono Black</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
+                        <div class="clearfix"></div>
+                        <h2>Obstacles</h2>
+                        <div class="draggable obstacle-1 solar-panel obstacle" data-qty="1">
+                            <p class="small">1x1m</p>
+                        </div>
+                        <div class="clearfix"></div>
+                        <h2>Six panels simultaneosly</h2>
+                        <div id="panel1" class="draggable style-1 solar-panel" data-qty="6">
+                            <p>Poly</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
+                        <div id="panel2" class="draggable style-2 solar-panel" data-qty="6">
+                            <p>Mono</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
+                        <div id="panel3" class="draggable style-3 solar-panel" data-qty="6">
+                            <p>Mono Black</p>
+                            <p class="small">1.65x1m</p>
+                        </div>
                     </div>
 
-                    <a href="javascript:void(0)" class="panel-options">Add selected element(s) options</a>
-                    <a href="javascript:void(0)" class="panel-delete">Delete selected element(s)</a>
-                    <a href="javascript:void(0)" class="panel-deselect">Deselect element(s)</a>
+                    <a href="javascript:void(0)" class="panel-options" title="Add options to selected panels">
+                        <span class="icon-message"></span>
+                    </a>
+                    <a href="javascript:void(0)" class="panel-delete" title="Delete selected panels">
+                        <span class="icon-delete"></span>
+                    </a>
+                    <a href="javascript:void(0)" class="panel-deselect" title="Clear selection">
+                        <span class="icon-layers_clear"></span>
+                    </a>
                 </div>
             </div>
         </div>

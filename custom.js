@@ -8,52 +8,64 @@ jQuery(function ($) {
         maxLeft = 0,
         maxTop = 0;
 
+    function addItem(element, qty)
+    {
+
+    }
     $('.solar-panel').click(function () {
         //on click add the clone to the main container
-        var clone = $(this).clone();
-        clone.attr('id', 'clone' + idx)
-            .addClass('dropped')
-            .css({'left': 0, 'top': 0, 'position': 'absolute'})
-            .appendTo('#sketch');
 
-        idx++;
+        var _this = $(this),
+            qty = (_this.data('qty') !== undefined) ? _this.data('qty') : 1;
 
-        var deltaX = 0, deltaY = 0,
-            deltaMaxX = 0, deltaMaxY = 0;
+        var tmpLeft = 0;
+        for (var i = 0; i < qty; i++) {
+            var clone = _this.clone();
+            clone.attr('id', 'clone' + idx)
+                .removeAttr('data-qty')
+                .addClass('dropped')
+                .css({'left': tmpLeft, 'top': 0, 'position': 'absolute'})
+                .appendTo('#sketch');
+            idx++;
+            tmpLeft += 50;
 
-        clone.draggable({
-            containment: 'parent',
-            grid: [10, 10],
-            multiple: {
-                beforeDrag: function (event, ui) {
-                    //detect collisions
-                    if (ui.position.left < deltaX) {
-                        ui.position.left = deltaX;
+            var deltaX = 0, deltaY = 0,
+                deltaMaxX = 0, deltaMaxY = 0;
+
+            clone.draggable({
+                containment: 'parent',
+                grid: [10, 10],
+                multiple: {
+                    beforeDrag: function (event, ui) {
+                        //detect collisions
+                        if (ui.position.left < deltaX) {
+                            ui.position.left = deltaX;
+                        }
+                        if (ui.position.top < deltaY) {
+                            ui.position.top = deltaY;
+                        }
+
+                        if (ui.position.left + deltaMaxX > mcWidth) {
+                            ui.position.left = mcWidth - deltaMaxX;
+                        }
+
+                        if (ui.position.top + deltaMaxY > mcHeight) {
+                            ui.position.top = mcHeight - deltaMaxY;
+                        }
                     }
-                    if (ui.position.top < deltaY) {
-                        ui.position.top = deltaY;
-                    }
-
-                    if (ui.position.left + deltaMaxX > mcWidth) {
-                        ui.position.left = mcWidth - deltaMaxX;
-                    }
-
-                    if (ui.position.top + deltaMaxY > mcHeight) {
-                        ui.position.top = mcHeight - deltaMaxY;
-                    }
+                },
+                start: function (event, ui) {
+                    //offsets when dragging multiple
+                    deltaX = ui.position.left - minLeft;
+                    deltaY = ui.position.top - minTop;
+                    deltaMaxX = maxLeft - ui.position.left;
+                    deltaMaxY = maxTop - ui.position.top;
+                },
+                stop: function () {
+                    recalculatePositions();
                 }
-            },
-            start: function (event, ui) {
-                //offsets when dragging multiple
-                deltaX = ui.position.left - minLeft;
-                deltaY = ui.position.top - minTop;
-                deltaMaxX = maxLeft - ui.position.left;
-                deltaMaxY = maxTop - ui.position.top;
-            },
-            stop: function () {
-                recalculatePositions();
-            }
-        });
+            });
+        }
     });
 
     mainContainer.on('click', '.dropped', function () {
@@ -96,11 +108,20 @@ jQuery(function ($) {
                 }
             })
             .then((value) => {
-                $('.ui-selected').attr('data-option', `${value}`);
-                //here should be called the ajax that stores
+                if(Math.floor(value) == value && $.isNumeric(value) && value > 0 && value < 100) {
+                    //here should be called the ajax that stores
+                    var selected = $('.ui-selected');
+                    selected.attr('data-option', `${value}`)
+                        .find('p:first-child')
+                        .append('<p class="option"><span>' + `${value}` + '</span></p>');
+                } else if(value == '') {
+                  $('.ui-selected .option').remove();
+                } else {
+                    alertError('The value must be and integer between 1 and 99')
+                }
             });
         } else {
-            alertNoSelection();
+            alertError('You must select at least one panel')
         }
     });
 
@@ -133,7 +154,7 @@ jQuery(function ($) {
                 }
             });
         } else {
-            alertNoSelection()
+            alertError('You must select at least one panel')
         }
     });
 
@@ -174,10 +195,10 @@ jQuery(function ($) {
         });
     }
 
-    function alertNoSelection()
+    function alertError(titleText)
     {
         swal({
-            title: 'You must select at least one panel',
+            title: titleText,
             dangerMode: true,
             button: {
                 text: "OK",
