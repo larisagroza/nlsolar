@@ -1,0 +1,58 @@
+@import "variables";
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.sketch {
+  height: 400px;
+  position: relative;
+  background-size: 50px 50px;
+  background-image: url('../img/grid.jpg');
+  max-width: round(100% / 50 * 50);
+}
+
+.tools {
+  background: #dedede;
+  height: 400px;
+  .solar-panel {
+    float: left;
+    margin: 10px 0 0 10px;
+  }
+  a {
+    display: block;
+  }
+}
+
+.solar-panel {
+  width: 50px;
+  height: 82px;
+}
+
+.style-1 {
+  background: $colorPanel1;
+  &.ui-selected {
+    background: darken($colorPanel1, 10%);
+  }
+}
+
+.style-2 {
+  background: $colorPanel2;
+  &.ui-selected {
+    background: darken($colorPanel2, 10%);
+  }
+}
+
+.style-3 {
+  background: $colorPanel3;
+  &.ui-selected {
+    background: darken($colorPanel3, 10%);
+  }
+}
+
+@media only screen and (max-width : 1200px) {
+  .tools {
+    height: auto;
+    margin-top: 20px;
+  }
+}
