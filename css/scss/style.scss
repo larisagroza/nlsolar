@@ -74,7 +74,7 @@ h2 {
 .style-1 {
   background-image: url($imgPoly);
   &.ui-selected {
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    background-image: linear-gradient($overlayColor, $overlayColor),
     url($imgPoly)
   }
 }
@@ -82,7 +82,7 @@ h2 {
 .style-2 {
   background-image: url($imgMono);
   &.ui-selected {
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    background-image: linear-gradient($overlayColor, $overlayColor),
     url($imgMono)
   }
 }
@@ -90,7 +90,7 @@ h2 {
 .style-3 {
   background-image: url($imgMonoBlack);
   &.ui-selected {
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    background-image: linear-gradient($overlayColor, $overlayColor),
     url($imgMonoBlack)
   }
 }
@@ -98,7 +98,7 @@ h2 {
 .obstacle-1 {
   background-image: url($imgObstacle);
   &.ui-selected {
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    background-image: linear-gradient($overlayColor, $overlayColor),
     url($imgObstacle)
   }
 }
