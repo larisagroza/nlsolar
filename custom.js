@@ -1,3 +1,4 @@
+var url = 'http://solar.websitetesting.ro';
 jQuery(function ($) {
     populateLegend();
 
@@ -216,7 +217,7 @@ jQuery(function ($) {
 
     function populateLegend()
     {
-        $.getJSON("http://nl-solar.local/legend.json", function(jsonData) {
+        $.getJSON(url + "/legend.json", function(jsonData) {
             var json = groupByKey(jsonData, 'type');
             if (json != 'undefined') {
                 for (var type in json) {
