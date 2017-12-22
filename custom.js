@@ -1,4 +1,5 @@
 var url = 'http://solar.websitetesting.ro';
+
 jQuery(function ($) {
     populateLegend();
 
@@ -84,7 +85,7 @@ jQuery(function ($) {
     });
 
 
-    $('.panel-options').click(function(){
+    $('.panel-options').click(function () {
         //sweetalert
         if ($('.ui-selected').length > 0) {
             swal({
@@ -114,25 +115,25 @@ jQuery(function ($) {
                     }
                 }
             })
-            .then((value) => {
-                if(Math.floor(value) == value && $.isNumeric(value) && value > 0 && value < 100) {
-                    //here should be called the ajax that stores
-                    var selected = $('.ui-selected');
-                    selected.attr('data-option', `${value}`)
-                        .find('p:first-child')
-                        .append('<p class="option"><span>' + `${value}` + '</span></p>');
-                } else if(value == '') {
-                  $('.ui-selected .option').remove();
-                } else {
-                    alertError('The value must be and integer between 1 and 99')
-                }
-            });
+                .then((value) => {
+                    if (Math.floor(value) == value && $.isNumeric(value) && value > 0 && value < 100) {
+                        //here should be called the ajax that stores
+                        var selected = $('.ui-selected');
+                        selected.attr('data-option', `${value}`)
+                            .find('p:first-child')
+                            .append('<p class="option"><span>' + `${value}` + '</span></p>');
+                    } else if (value == '') {
+                        $('.ui-selected .option').remove();
+                    } else {
+                        alertError('The value must be and integer between 1 and 99')
+                    }
+                });
         } else {
             alertError('You must select at least one panel')
         }
     });
 
-    $('.panel-delete').click(function(){
+    $('.panel-delete').click(function () {
         if ($('.ui-selected').length > 0) {
             swal({
                 title: "Delete selected panels",
@@ -154,25 +155,28 @@ jQuery(function ($) {
                     }
                 }
             })
-            .then((value) => {
-                if (value == true) {
-                    $('.ui-selected').remove();
-                    recalculateWidths();
-                    //here should be called the ajax that refreshes the panels stored
-                }
-            });
+                .then((value) => {
+                    if (value == true) {
+                        $('.ui-selected').remove();
+                        recalculateWidths();
+                        //here should be called the ajax that refreshes the panels stored
+                    }
+                });
         } else {
             alertError('You must select at least one panel')
         }
     });
 
-    $('.panel-deselect').click(function(){
-       $('.ui-selected').removeClass('ui-selected');
+    $('.panel-deselect').click(function () {
+        $('.ui-selected').removeClass('ui-selected');
+    });
+
+    $('.show-measurement').change(function () {
+        recalculateWidths();
     });
 
     //calculate the bounding rectangle positions when moving multiples
-    function recalculatePositions()
-    {
+    function recalculatePositions() {
         minLeft = 99999;
         minTop = 99999;
         maxLeft = 0;
@@ -203,8 +207,7 @@ jQuery(function ($) {
         });
     }
 
-    function alertError(titleText)
-    {
+    function alertError(titleText) {
         swal({
             title: titleText,
             dangerMode: true,
@@ -215,9 +218,8 @@ jQuery(function ($) {
         })
     }
 
-    function populateLegend()
-    {
-        $.getJSON(url + "/legend.json", function(jsonData) {
+    function populateLegend() {
+        $.getJSON(url + "/legend.json", function (jsonData) {
             var json = groupByKey(jsonData, 'type');
             if (json != 'undefined') {
                 for (var type in json) {
@@ -233,10 +235,12 @@ jQuery(function ($) {
                                     width = legendItems[key][i].width,
                                     height = legendItems[key][i].height,
                                     img = (typeof legendItems[key][i].image !== 'undefined') ? legendItems[key][i].image : '',
-                                    handleX = parseFloat(legendItems[key][i].handle_left) + parseFloat(legendItems[key][i].handle_right);
+                                    handleX = parseFloat(legendItems[key][i].handle_left) + parseFloat(legendItems[key][i].handle_right),
+                                    handleY = parseFloat(legendItems[key][i].handle_top) + parseFloat(legendItems[key][i].handle_bottom);
+                                    handleEndClampX = parseFloat(legendItems[key][i].endclamp_width);
 
                                 html += '<div class="draggable solar-panel ' + cssClasses + '" data-qty="' + qty + '" ' +
-                                    'style="background:url(' + img + ')" data-handle-x="' + handleX + '" data-type="' + legendItems[key][i].type + '" data-width="' + width + '" data-height="' + height + '">';
+                                    'style="background:url(' + img + ')" data-handle-x="' + handleX + '" data-handle-y="' + handleY + '" data-handle-end-clamp-x="' + handleEndClampX + '" data-type="' + legendItems[key][i].type + '" data-width="' + width + '" data-height="' + height + '">';
                                 html += '<p>' + name + '</p>';
                                 html += '<p class="small">' + width + 'x' + height + 'm</p>';
                                 html += '</div>';
@@ -252,16 +256,17 @@ jQuery(function ($) {
 
     }
 
-    function removeLines()
-    {
+    function removeLines() {
         $('.sketch .line').remove();
     }
 
-    function recalculateWidths()
-    {
+    function recalculateWidths() {
         removeLines();
+        if ($('.form-check-input:checked').length == 0) {
+            return;
+        }
         var panels = [];
-        $('.sketch .solar-panel').each(function(){
+        $('.sketch .solar-panel').each(function () {
             var _this = $(this);
             if (!_this.hasClass('obstacle')) {
                 var panel = {
@@ -271,7 +276,9 @@ jQuery(function ($) {
                     height: _this.height(),
                     handleWidth: _this.data('width'),
                     handleHeight: _this.data('height'),
-                    handleX: _this.data('handle-x')
+                    handleX: _this.data('handle-x'),
+                    handleY: _this.data('handle-y'),
+                    handleEndClampX: _this.data('handle-end-clamp-x'),
                 };
                 panels.push(panel);
             }
@@ -286,11 +293,14 @@ jQuery(function ($) {
                 var currentPanels = getPanelsByTop(panels, initialTop);
                 currentPanels.sort(getSortOrder('left'));
                 var panelWidth = 0;
-                var handleWidth = 0;
+                var panelHeight = 0;
+
+                var handleWidth = currentPanels[0].handleEndClampX;
                 var nextLeft = currentPanels[0].left;
                 var startLeft = currentPanels[0].left;
-                var startTop = currentPanels[0].top + currentPanels[0].height;
+
                 var lineWidth = 0;
+                var lineHeight = 0;
 
                 for (var k in currentPanels) {
                     var idx = parseInt(k) + 1;
@@ -300,10 +310,14 @@ jQuery(function ($) {
                         handleWidth += currentPanels[k].handleX;
                         nextLeft = currentPanels[k].left + currentPanels[k].width;
                         lineWidth += currentPanels[k].width;
+                        if (panelHeight < currentPanels[k].handleHeight + currentPanels[k].handleX) {
+                            panelHeight = currentPanels[k].handleHeight + currentPanels[k].handleX;
+                            lineHeight = currentPanels[k].height;
+                        }
                     } else {
-                        startTop = currentPanels[k-1].top + currentPanels[k-1].height;
-                        startLeft = currentPanels[k-1].left + currentPanels[k-1].width - lineWidth;
-                        drawWidthLine(startLeft, startTop, lineWidth, panelWidth, handleWidth);
+                        startLeft = currentPanels[k - 1].left + currentPanels[k - 1].width - lineWidth;
+                        handleWidth += currentPanels[k - 1].handleEndClampX;
+                        drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight);
                         panelWidth = 0;
                         handleWidth = 0;
                         lineWidth = 0;
@@ -313,42 +327,59 @@ jQuery(function ($) {
                             nextLeft = 0;
                         }
                         panelWidth += currentPanels[k].handleWidth;
-                        handleWidth += currentPanels[k].handleX;
+                        handleWidth += currentPanels[k].handleX + currentPanels[k].handleEndClampX;
                         lineWidth += currentPanels[k].width;
+                        if (panelHeight < currentPanels[k].handleHeight + currentPanels[k].handleX) {
+                            panelHeight = currentPanels[k].handleHeight + currentPanels[k].handleX;
+                            lineHeight = currentPanels[k].height;
+                        }
                     }
 
                     if (idx == currentPanels.length) {
-                        startTop = currentPanels[k].top + currentPanels[k].height;
+                        handleWidth += currentPanels[k].handleEndClampX;
                         startLeft = currentPanels[k].left + currentPanels[k].width - lineWidth;
                     }
                 }
-                drawWidthLine(startLeft, startTop, lineWidth, panelWidth, handleWidth);
+                drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight);
             }
         }
 
     }
 
-    function drawWidthLine(left, top, lineWidth, panelWidth, handleWidth)
-    {
-        top -= 14;
-        lineWidth -= 20;
-        left += 10;
-        var meters = panelWidth * 1.0 + handleWidth * 1.0;
-        var line = '<div class="line" style="top: ' + top + 'px; left: ' + left + 'px; width: ' + lineWidth + 'px;">';
-        line += meters.toFixed(2) + 'm';
+    function drawWidthLine(left, top, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight) {
+        var padding = 10,
+            verticalLeft = left + padding/2,
+            verticalTop = top + padding/2,
+            horizontalTop = top + padding / 2,
+            horizontalLeft = left + padding;
+
+
+        lineWidth -= 2 * padding;
+        var metersWidth = panelWidth * 1.0 + handleWidth * 1.0;
+
+        var line = '<div class="line" style="top: ' + horizontalTop + 'px; left: ' + horizontalLeft + 'px; width: ' + lineWidth + 'px;">';
+        line += metersWidth.toFixed(2) + 'm';
         line += '</div>';
         $('.sketch').append(line);
+
+        // lineHeight -= 2 * padding;
+        // var line = '<div class="line vertical" style="top: ' + verticalTop + 'px; left: ' + verticalLeft + 'px; height: ' + lineHeight + 'px; width: 8px;">';
+        // line += '<span style="position: absolute; transform: rotate(-90deg);">' + panelHeight.toFixed(2) + 'm' + '</span>';
+        // line += '</div>';
+        // $('.sketch').append(line);
     }
 
     function getPanelsByTop(data, top) {
         return data.filter(
-            function(data){ return data.top == top }
+            function (data) {
+                return data.top == top
+            }
         );
     }
 
 
     function getSortOrder(prop) {
-        return function(a, b) {
+        return function (a, b) {
             if (a[prop] > b[prop]) {
                 return 1;
             } else if (a[prop] < b[prop]) {
@@ -359,7 +390,7 @@ jQuery(function ($) {
     }
 
     function groupByKey(xs, key) {
-        return xs.reduce(function(rv, x) {
+        return xs.reduce(function (rv, x) {
             (rv[x[key]] = rv[x[key]] || []).push(x);
             return rv;
         }, {});
