@@ -186,6 +186,7 @@ jQuery(function ($) {
 
     $('.show-measurement').change(function () {
         recalculateWidths();
+        recalculateHeights();
     });
 
     //calculate the bounding rectangle positions when moving multiples
