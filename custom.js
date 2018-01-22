@@ -1,4 +1,12 @@
 var url = 'http://solar.websitetesting.ro';
+var panelsHeight = [];
+
+Array.prototype.getSet = function (set) {
+    return this.filter(function (item) {
+        return item.visited == set;
+    });
+};
+var Const = {};
 
 jQuery(function ($) {
     populateLegend();
@@ -10,7 +18,8 @@ jQuery(function ($) {
         minLeft = 99999,
         minTop = 99999,
         maxLeft = 0,
-        maxTop = 0;
+        maxTop = 0,
+        widthLines = [];
 
     $('.options').on('click', '.solar-panel', function () {
         //on click add the clone to the main container
@@ -69,10 +78,14 @@ jQuery(function ($) {
                 stop: function () {
                     recalculatePositions();
                     recalculateWidths();
+                    recalculateHeights()
                 }
             });
         }
-        recalculateWidths();
+        setTimeout(function () {
+            recalculateWidths();
+            recalculateHeights()
+        }, 0);
     });
 
     mainContainer.on('click', '.dropped', function () {
@@ -236,7 +249,7 @@ jQuery(function ($) {
                                     height = legendItems[key][i].height,
                                     img = (typeof legendItems[key][i].image !== 'undefined') ? legendItems[key][i].image : '',
                                     handleX = parseFloat(legendItems[key][i].handle_left) + parseFloat(legendItems[key][i].handle_right),
-                                    handleY = parseFloat(legendItems[key][i].handle_top) + parseFloat(legendItems[key][i].handle_bottom);
+                                    handleY = parseFloat(legendItems[key][i].handle_top) + parseFloat(legendItems[key][i].handle_bottom),
                                     handleEndClampX = parseFloat(legendItems[key][i].endclamp_width);
 
                                 html += '<div class="draggable solar-panel ' + cssClasses + '" data-qty="' + qty + '" ' +
@@ -278,7 +291,7 @@ jQuery(function ($) {
                     handleHeight: _this.data('height'),
                     handleX: _this.data('handle-x'),
                     handleY: _this.data('handle-y'),
-                    handleEndClampX: _this.data('handle-end-clamp-x'),
+                    handleEndClampX: _this.data('handle-end-clamp-x')
                 };
                 panels.push(panel);
             }
@@ -286,23 +299,24 @@ jQuery(function ($) {
         panels.sort(getSortOrder('top'));
 
         var initialTop = null;
-        for (var key in panels) {
+        widthLines = [];
+
+        for (var key = 0; key < panels.length; key++) {
             if (panels[key].top != initialTop) {
                 initialTop = panels[key].top;
 
                 var currentPanels = getPanelsByTop(panels, initialTop);
                 currentPanels.sort(getSortOrder('left'));
                 var panelWidth = 0;
-                var panelHeight = 0;
+
 
                 var handleWidth = currentPanels[0].handleEndClampX;
                 var nextLeft = currentPanels[0].left;
                 var startLeft = currentPanels[0].left;
 
                 var lineWidth = 0;
-                var lineHeight = 0;
 
-                for (var k in currentPanels) {
+                for (var k = 0; k < currentPanels.length; k++) {
                     var idx = parseInt(k) + 1;
 
                     if (nextLeft == currentPanels[k].left) {
@@ -310,14 +324,10 @@ jQuery(function ($) {
                         handleWidth += currentPanels[k].handleX;
                         nextLeft = currentPanels[k].left + currentPanels[k].width;
                         lineWidth += currentPanels[k].width;
-                        if (panelHeight < currentPanels[k].handleHeight + currentPanels[k].handleX) {
-                            panelHeight = currentPanels[k].handleHeight + currentPanels[k].handleX;
-                            lineHeight = currentPanels[k].height;
-                        }
                     } else {
                         startLeft = currentPanels[k - 1].left + currentPanels[k - 1].width - lineWidth;
                         handleWidth += currentPanels[k - 1].handleEndClampX;
-                        drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight);
+                        drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth);
                         panelWidth = 0;
                         handleWidth = 0;
                         lineWidth = 0;
@@ -329,10 +339,6 @@ jQuery(function ($) {
                         panelWidth += currentPanels[k].handleWidth;
                         handleWidth += currentPanels[k].handleX + currentPanels[k].handleEndClampX;
                         lineWidth += currentPanels[k].width;
-                        if (panelHeight < currentPanels[k].handleHeight + currentPanels[k].handleX) {
-                            panelHeight = currentPanels[k].handleHeight + currentPanels[k].handleX;
-                            lineHeight = currentPanels[k].height;
-                        }
                     }
 
                     if (idx == currentPanels.length) {
@@ -340,16 +346,89 @@ jQuery(function ($) {
                         startLeft = currentPanels[k].left + currentPanels[k].width - lineWidth;
                     }
                 }
-                drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight);
+                drawWidthLine(startLeft, initialTop, lineWidth, panelWidth, handleWidth);
             }
         }
 
     }
 
-    function drawWidthLine(left, top, lineWidth, panelWidth, handleWidth, panelHeight, lineHeight) {
+    function recalculateHeights() {
+        if ($('.form-check-input:checked').length == 0) {
+            return;
+        }
+
+        panelsHeight = [];
+        $('.sketch .solar-panel').each(function () {
+            var _this = $(this);
+            if (!_this.hasClass('obstacle')) {
+                var panel = new Panel(
+                    _this.attr('id'),
+                    _this.position().left,
+                    _this.position().top,
+                    _this.width(),
+                    _this.height(),
+                    _this.data('width'),
+                    _this.data('height'),
+                    _this.data('handle-x'),
+                    _this.data('handle-y'),
+                    _this.data('handle-end-clamp-x')
+                );
+                panelsHeight.push(panel);
+            }
+        });
+
+        //sort
+        panelsHeight.sort(function (a, b) {
+            if (a.top == b.top) {
+                return a.left - b.left;
+            }
+            return a.top - b.top;
+        });
+
+        for (var key = 0, item; item = panelsHeight[key++];) {
+            item.getNeighbours();
+        }
+
+        Const.SET = 1;
+
+        do {
+            var found = false;
+            jQuery.each(panelsHeight, function (k, panel) {
+                if (!panel.visited) {
+                    found = panel;
+                    return false;
+                }
+            });
+            if (!found) {
+                break;
+            }
+
+            found.visit();
+            Const.SET++;
+        } while (true);
+
+
+        for (var i = 1; i < Const.SET; i++) {
+            var phSet = panelsHeight.getSet(i);
+            var phCost = phSet.map(function (panel) {
+                panel.cost = 0;
+                return panel.getCost();
+            });
+
+            var maxmax = Math.max.apply(Math, phCost);
+            //draw line starting from first to last
+            if (maxmax > 0) {
+                var start = phSet[0],
+                    end = phSet[phSet.length - 1],
+                    startX = start.left - 10;
+                drawHeightLine(startX, start.top, end.top + end.height - start.top, maxmax);
+            }
+        }
+
+    }
+
+    function drawWidthLine(left, top, lineWidth, panelWidth, handleWidth) {
         var padding = 10,
-            verticalLeft = left + padding/2,
-            verticalTop = top + padding/2,
             horizontalTop = top + padding / 2,
             horizontalLeft = left + padding;
 
@@ -361,12 +440,20 @@ jQuery(function ($) {
         line += metersWidth.toFixed(2) + 'm';
         line += '</div>';
         $('.sketch').append(line);
+    }
 
-        // lineHeight -= 2 * padding;
-        // var line = '<div class="line vertical" style="top: ' + verticalTop + 'px; left: ' + verticalLeft + 'px; height: ' + lineHeight + 'px; width: 8px;">';
-        // line += '<span style="position: absolute; transform: rotate(-90deg);">' + panelHeight.toFixed(2) + 'm' + '</span>';
-        // line += '</div>';
-        // $('.sketch').append(line);
+    function drawHeightLine(startX, startY, lineHeight, meters) {
+        var padding = 10,
+            paddingTop = lineHeight* 1.0 / 2;
+
+        lineHeight -= padding;
+        startY += padding / 2;
+        var line = '<div class="line vertical" style="top: ' + startY + 'px; left: ' + startX + 'px; height: ' + lineHeight + 'px; width: 8px; line-height: ' + lineHeight + 'px">';
+        line += '<span style="margin-left: 10px; color: #000; background: yellow; border-radius: 3px; padding: 3px;">';
+        line += meters.toFixed(2) + 'm';
+        line += '</span>';
+        line += '</div>';
+        $('.sketch').append(line);
     }
 
     function getPanelsByTop(data, top) {
@@ -376,7 +463,6 @@ jQuery(function ($) {
             }
         );
     }
-
 
     function getSortOrder(prop) {
         return function (a, b) {
@@ -396,3 +482,141 @@ jQuery(function ($) {
         }, {});
     };
 });
+
+class Panel {
+    constructor(id, left, top, width, height, handleWidth, handleHeight, handleX, handleY, handleEndClampX) {
+        this.id = id;
+        this.visited = 0;
+        this.computed = 0;
+        this.left = left;
+        this.top = top;
+        this.height = height;
+        this.width = width;
+        this.bottom = this.top + this.height;
+        this.right = this.left + this.width;
+        this.handleWidth = handleWidth;
+        this.handleHeight = handleHeight;
+        this.handleX = handleX;
+        this.handleY = handleY;
+        this.handleEndClampX = handleEndClampX;
+    }
+
+    getNeighbours() {
+        var bottomPanels = [];
+        var rightPanels = [];
+        var leftPanels = [];
+        var topPanels = [];
+        for (var key = 0; key < panelsHeight.length; key++) {
+            if (this.bottom == panelsHeight[key].top &&
+                (this.left <= panelsHeight[key].left && panelsHeight[key].left <= this.right ||
+                this.left <= panelsHeight[key].right && panelsHeight[key].right <= this.right)) {
+                bottomPanels.push(panelsHeight[key]);
+            }
+            if (this.right == panelsHeight[key].left &&
+                (this.top <= panelsHeight[key].top && panelsHeight[key].top <= this.bottom ||
+                this.top <= panelsHeight[key].bottom && panelsHeight[key].bottom <= this.bottom)) {
+                rightPanels.push(panelsHeight[key]);
+            }
+
+            if (this.left == panelsHeight[key].right &&
+                (this.top <= panelsHeight[key].top && panelsHeight[key].top <= this.bottom ||
+                this.top <= panelsHeight[key].bottom && panelsHeight[key].bottom <= this.bottom)) {
+                leftPanels.push(panelsHeight[key]);
+            }
+
+            if (this.top == panelsHeight[key].bottom &&
+                (this.left <= panelsHeight[key].left && panelsHeight[key].left <= this.right ||
+                this.left <= panelsHeight[key].right && panelsHeight[key].right <= this.right)) {
+                topPanels.push(panelsHeight[key]);
+            }
+
+        }
+        this.bottomPanels = bottomPanels;
+        this.rightPanels = rightPanels;
+        this.leftPanels = leftPanels;
+        this.topPanels = topPanels;
+    }
+
+    getCost() {
+        var costs = [];
+
+        if (!this.bottomPanels.length) {
+            return this.handleHeight + this.handleY;
+        }
+
+        for (var i = 0, pb; pb = this.bottomPanels[i++];) {
+            var current = pb;
+            var pbSiblings = [pb];
+
+            while (pb.rightPanels.length) {
+                var nextValid = pb.rightPanels.filter(function (item) {
+                    return item.bottom != pb.top && item.top != pb.bottom;
+                });
+
+                if (!nextValid.length) {
+                    break;
+                }
+
+                pbSiblings = pbSiblings.concat(nextValid);
+                pb = nextValid[0];
+            }
+
+            pb = current;
+            while (pb.leftPanels.length) {
+                var nextValid = pb.leftPanels.filter(function (item) {
+                    return item.bottom != pb.top && item.top != pb.bottom;
+                });
+
+                if (!nextValid.length) {
+                    break;
+                }
+
+                pbSiblings = pbSiblings.concat(nextValid);
+                pb = nextValid[0];
+            }
+        }
+
+        for (var key = 0; key < pbSiblings.length; key++) {
+            if (pbSiblings[key] !== this) {
+                costs.push(pbSiblings[key].getCost());
+            }
+        }
+
+        if (costs.length) {
+            return this.handleHeight + this.handleY + Math.max.apply(Math, costs);
+        }
+
+        return 0;
+    }
+
+    visit() {
+        if (this.visited) {
+            return;
+        }
+
+        this.visited = Const.SET;
+        if (this.rightPanels.length) {
+            for (var key = 0, item; item = this.rightPanels[key++];) {
+                item.visit();
+            }
+        }
+
+        if (this.bottomPanels.length) {
+            for (var key = 0, item; item = this.bottomPanels[key++];) {
+                item.visit();
+            }
+        }
+
+        if (this.leftPanels.length) {
+            for (var key = 0, item; item = this.leftPanels[key++];) {
+                item.visit();
+            }
+        }
+        if (this.topPanels.length) {
+            for (var key = 0, item; item = this.topPanels[key++];) {
+                item.visit();
+            }
+        }
+    }
+
+}
