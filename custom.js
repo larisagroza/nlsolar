@@ -35,6 +35,14 @@ jQuery(function ($) {
                 .addClass('dropped')
                 .css({'left': tmpLeft, 'top': 0, 'position': 'absolute'})
                 .appendTo('#sketch');
+
+            if (clone.hasClass('obstacle')) {
+                var ratioX = clone.data('width') / clone.width(),
+                    ratioY = clone.data('height') / clone.height();
+
+                clone.attr('data-ratio-x', ratioX)
+                    .attr('data-ratio-y', ratioY);
+            }
             idx++;
             if (_this.hasClass('landscape')) {
                 tmpLeft += 80;
@@ -81,6 +89,24 @@ jQuery(function ($) {
                     recalculateHeights()
                 }
             });
+
+            if (clone.hasClass('obstacle') && clone.data('resizable') == true) {
+                clone.resizable({
+                    grid: [10, 10],
+                    minHeight: 50,
+                    minWidth: 50,
+                    stop: function (event, ui) {
+                        var ratioX = ui.originalElement.data('ratio-x'),
+                            ratioY = ui.originalElement.data('ratio-y'),
+                            stopWidthMeters = ui.size.width * ratioX,
+                            stopHeightMeters = ui.size.height * ratioY;
+
+                        ui.element.attr('data-width', stopWidthMeters)
+                            .attr('data-height', stopHeightMeters)
+                            .find('.small').html(stopWidthMeters + 'x' + stopHeightMeters + 'm');
+                    }
+                });
+            }
         }
         setTimeout(function () {
             recalculateWidths();
@@ -251,10 +277,11 @@ jQuery(function ($) {
                                     img = (typeof legendItems[key][i].image !== 'undefined') ? legendItems[key][i].image : '',
                                     handleX = parseFloat(legendItems[key][i].handle_left) + parseFloat(legendItems[key][i].handle_right),
                                     handleY = parseFloat(legendItems[key][i].handle_top) + parseFloat(legendItems[key][i].handle_bottom),
-                                    handleEndClampX = parseFloat(legendItems[key][i].endclamp_width);
+                                    handleEndClampX = parseFloat(legendItems[key][i].endclamp_width),
+                                    resizable = legendItems[key][i].resizable;
 
                                 html += '<div class="draggable solar-panel ' + cssClasses + '" data-qty="' + qty + '" ' +
-                                    'style="background:url(' + img + ')" data-handle-x="' + handleX + '" data-handle-y="' + handleY + '" data-handle-end-clamp-x="' + handleEndClampX + '" data-type="' + legendItems[key][i].type + '" data-width="' + width + '" data-height="' + height + '">';
+                                    'style="background:url(' + img + ')" data-handle-x="' + handleX + '" data-handle-y="' + handleY + '" data-handle-end-clamp-x="' + handleEndClampX + '" data-type="' + legendItems[key][i].type + '" data-width="' + width + '" data-height="' + height + '" data-resizable="' + resizable + '">';
                                 html += '<p>' + name + '</p>';
                                 html += '<p class="small">' + width + 'x' + height + 'm</p>';
                                 html += '</div>';
@@ -445,7 +472,7 @@ jQuery(function ($) {
 
     function drawHeightLine(startX, startY, lineHeight, meters) {
         var padding = 10,
-            paddingTop = lineHeight* 1.0 / 2;
+            paddingTop = lineHeight * 1.0 / 2;
 
         lineHeight -= padding;
         startY += padding / 2;
