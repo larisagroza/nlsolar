@@ -93,8 +93,8 @@ jQuery(function ($) {
             if (clone.hasClass('obstacle') && clone.data('resizable') == true) {
                 clone.resizable({
                     grid: [10, 10],
-                    minHeight: 50,
-                    minWidth: 50,
+                    minHeight: 10,
+                    minWidth: 10,
                     stop: function (event, ui) {
                         var ratioX = ui.originalElement.data('ratio-x'),
                             ratioY = ui.originalElement.data('ratio-y'),
